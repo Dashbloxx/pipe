@@ -85,6 +85,9 @@ int generate_response(response_t * input, char * output)
     case 200:
         strcpy(output, "HTTP/1.0 200 OK\r\n");
         break;
+    case 404:
+        strcpy(output, "HTTP/1.0 404 Not Found\r\n");
+        break;
     default:
         return -6;
     }
@@ -106,6 +109,8 @@ int generate_response(response_t * input, char * output)
 
         free(buffer0);
     }
+
+    strcat(output, "\r\n");
 
     strcat(output, input->body);
 }

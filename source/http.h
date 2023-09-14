@@ -16,6 +16,12 @@ typedef struct
     char * body;
 } response_t;
 
+typedef enum
+{
+    RQ_GET,
+    RQ_POST
+} request_t;
+
 int parse_header(char * input, header_t * output);
 int generate_header(header_t * input, char * output);
 int generate_response(response_t * input, char * output);
