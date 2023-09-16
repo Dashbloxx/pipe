@@ -9,6 +9,7 @@
 
 #include "handler.h"
 #include "http.h"
+#include "logger.h"
 #include "main.h"
 
 size_t routes_size;
@@ -55,7 +56,7 @@ int main(int argc, char * argv[])
                 port = (uint16_t)atoi(optarg);
                 break;
             default:
-                fprintf(stderr, "Usage: %s -p <port>\n", argv[0]);
+                sendf(stderr, LOG_ERROR, "Usage: %s -p <port>\n", argv[0]);
                 return -1;
         }
     }
@@ -70,7 +71,7 @@ int main(int argc, char * argv[])
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd == -1)
     {
-        fprintf(stderr, "error: Failed to create socket...\n");
+        sendf(stderr, LOG_ERROR, "Failed to create socked...\n");
         return -2;
     }
 
@@ -83,24 +84,24 @@ int main(int argc, char * argv[])
 
     if(bind(sockfd, (struct sockaddr *)&host_addr, host_addrlen) != 0)
     {
-        fprintf(stderr, "error: Failed to bind to socket...\n");
+        sendf(stderr, LOG_ERROR, "Failed to bind to socket...\n");
         return -2;
     }
 
     if(listen(sockfd, SOMAXCONN) != 0)
     {
-        fprintf(stderr, "error: Failed to listen to port %d...\n", port);
+        sendf(stderr, LOG_ERROR, "error: Failed to listen to port %d...\n", port);
         return -3;
     }
 
-    printf("info: Listening for connections on port %d!\n", port);
+    sendf(stdout, LOG_INFO, "Listening for connections on port %d!\n", port);
 
     for(;;)
     {
         int newsockfd = accept(sockfd, (struct sockaddr *)&host_addr, (socklen_t *)&host_addrlen);
         if(newsockfd < 0)
         {
-            fprintf(stderr, "error: Failed to accept connection...\n");
+            sendf(stderr, LOG_ERROR, "Failed to accept connection...\n");
             continue;
         }
 
@@ -108,7 +109,7 @@ int main(int argc, char * argv[])
 
         if(pthread_create(&thread, NULL, handler, (void *)&newsockfd) != 0)
         {
-            fprintf(stderr, "error: Failed to create a new thread...\n");
+            sendf(stderr, LOG_ERROR, "Failed to create a new thread...\n");
             return -4;
         }
     }

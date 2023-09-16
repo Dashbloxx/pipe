@@ -9,6 +9,7 @@
 
 #include "handler.h"
 #include "http.h"
+#include "logger.h"
 #include "main.h"
 
 void * handler(void * argument)
@@ -22,21 +23,20 @@ void * handler(void * argument)
     int sockn = getsockname(sockfd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addrlen);
     if(sockn < 0)
     {
-        fprintf(stderr, "error: Failed to get client's address...\n");
+        sendf(stderr, LOG_ERROR, "Failed to get client's address...\n");
         pthread_exit(NULL);
     }
 
     int valread = read(sockfd, buffer0, BUFFER_SIZE);
     if(valread < 0)
     {
-        fprintf(stderr, "error: Failed to read from socket...\n");
+        sendf(stderr, LOG_ERROR, "Failed to read from socket...\n");
         pthread_exit(NULL);
     }
 
     char method[BUFFER_SIZE], uri[BUFFER_SIZE], version[BUFFER_SIZE];
-    printf("%s\n", buffer0);
     sscanf(buffer0, "%s %s %s", method, uri, version);
-    printf("[%s:%u] %s %s %s\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), method, version, uri);
+    sendf(stdout, LOG_DEBUG, "Client %s:%s made a %s request to %s!\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), method, uri);
 
     char * response0;
     bool has_route_been_found = false;
@@ -72,7 +72,7 @@ void * handler(void * argument)
     int valwrite = write(sockfd, response0, strlen(response0));
     if(valwrite < 0)
     {
-        fprintf(stderr, "error: Failed to write to socket...\n");
+        sendf(stderr, LOG_ERROR, "Failed to write to socket...\n");
         pthread_exit(NULL);
     }
 
